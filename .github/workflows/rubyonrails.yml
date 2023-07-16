@@ -24,17 +24,36 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
 
+    services:
+      db:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: my_test_database
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Compose
-        uses: docker/compose-action@v1
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          compose-file: docker-compose.yml
+          ruby-version: 3.0.4
+          bundler-cache: true 
+
+      - name: Build and run Docker image
+        run: |
+          docker build -t my_rails_app .
+          docker run -d -p 3000:3000 -e RAILS_ENV=test --name my_rails_app_container my_rails_app
+
+      - name: Wait for Rails server to start
+        run: docker exec my_rails_app_container bundle exec rails db:prepare
 
       - name: Run tests
-        run: docker-compose run my_rails_app bundle exec rails test
+        run: docker exec my_rails_app_container bundle exec rails test
 
   lint:
     name: Lint
@@ -53,5 +72,3 @@ jobs:
 
       - name: Run RuboCop
         run: docker run my_rails_app bundle exec rubocop
-
-   
