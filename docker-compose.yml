@@ -1,0 +1,47 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+      - "1080:1080"
+      - "1025:1025"
+    volumes:
+      - .:/user/app
+    depends_on:
+      - db
+      - redis-queue
+      - redis-cache
+    environment:
+      - RAILS_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/decide
+      - REDIS_URL=redis://redis-queue:6379/0
+    command: ["sh", "-c", "rails db:create db:migrate && rails server -b 0.0.0.0 -d && mailcatcher --ip=0.0.0.0 && bundle exec sidekiq"]
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=decide
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  redis-queue:
+    image: redis:6.0.12-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-queue-data:/data
+  redis-cache:
+    image: redis:6.0.12-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-cache-data:/data     
+
+volumes:
+  redis-queue-data:
+  redis-cache-data:
+  postgres_data:
