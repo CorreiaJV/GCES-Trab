@@ -36,7 +36,7 @@ jobs:
           docker build -t my_rails_app .
 
       - name: Run tests
-        run: docker exec my_rails_app_container bundle exec rails test
+        run: docker run my_rails_app bundle exec rails test 
 
   lint:
     name: Lint
