@@ -34,7 +34,6 @@ jobs:
       - name: Build and run Docker image
         run: |
           docker build -t my_rails_app .
-          docker run -d -p 3000:3000 -p 1025:1025 -p 1080:1080 --name my_rails_app_container my_rails_app
 
       - name: Run tests
         run: docker exec my_rails_app_container bundle exec rails test
