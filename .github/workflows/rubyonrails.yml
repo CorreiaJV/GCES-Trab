@@ -73,9 +73,16 @@ jobs:
           sudo apt-get update && sudo apt-get install -y yarn
           npm install
           yarn
-      
+
+      - name: Setup PostgreSQL
+        run: docker run -d --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:13.2-alpine
+
+      - name: Wait for PostgreSQL
+        run: docker run --rm --network host postgres:13.2-alpine sh -c 'until pg_isready -U postgres; do sleep 1; done'
+
       - name: Run tests
         run: |
+          bundle exec rails db:prepare
           bundle exec rails test
 
   lint:
