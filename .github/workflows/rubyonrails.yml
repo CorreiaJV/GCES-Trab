@@ -35,8 +35,8 @@ jobs:
 
       - name: Run tests with Docker
         run: |
-          docker run -d -p 3000:3000 -p 1025:1025 -p 1080:1080 --name my_rails_app_container my_rails_app
-          docker exec my_rails_app_container bundle exec rails test/models
+          docker run -d -p 3000:3000 -p 1025:1025 -p 1080:1080  my_rails_app
+          docker exec my_rails_app bundle exec rails test/models
 
   lint:
     name: Lint
