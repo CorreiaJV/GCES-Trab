@@ -23,39 +23,20 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    container:
-      image: ruby:3.0.4 # Usar imagem oficial do Ruby 3.0.4 para os testes
-
-    services:
-      db:
-        image: postgres:latest
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: my_test_database
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Bundler cache
-        id: bundler-cache
-        uses: actions/cache@v2
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-bundler-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bundler-
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v1
 
-      - name: Bundle install
+      - name: Build and run Docker image
         run: |
-          bundle config set path 'vendor/bundle'
-          bundle install --jobs 4 --retry 3
+          docker build -t my_rails_app .
 
       - name: Run tests
-        run: bundle exec rails test
+        run: docker run my_rails_app bundle exec rails test
 
   lint:
     name: Lint
