@@ -24,6 +24,21 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
 
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: my_test_database
+
+    services:
+      db:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: my_test_database
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -38,6 +53,10 @@ jobs:
           
       - name: Install project dependencies
         run: bundle install
+
+      - name: Wait for PostgreSQL
+        run: |
+          while ! nc -z localhost 5432; do sleep 1; done
 
       - name: Run tests
         run: bundle exec rails test
