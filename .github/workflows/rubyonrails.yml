@@ -19,10 +19,20 @@ jobs:
 
       - name: Build Docker image
         run: docker build -t my_rails_app .
-
+        
   test:
     name: Test
     runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: my_test_database
 
     steps:
       - name: Checkout code
@@ -31,9 +41,11 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v1
 
-      - name: Build and run Docker image
-        run: |
-          docker build -t my_rails_app .
+      - name: Build Docker image
+        run: docker build -t my_rails_app .
+
+      - name: Wait for PostgreSQL
+        run: dockerize -wait tcp://localhost:5432 -timeout 1m
 
       - name: Run tests
         run: docker run my_rails_app bundle exec rails test
